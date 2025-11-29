@@ -57,3 +57,6 @@ graph deploy uniswap-v-4-hookpulse
 ## Resources
 - HookPulse Subgraph (Studio): https://thegraph.com/studio/subgraph/uniswap-v-4-hookpulse
 - Curated hook list: https://github.com/fewwwww/awesome-uniswap-hooks — an in-depth collection of hook projects, tooling, and security research you can use to discover new hook deployments and feed those addresses into HookPulse queries.
+
+## Demo
+- `examples/hookpulse-dashboard.html`: simple static page that fetches top hooks and renders them in a table. Open it in a browser to see HookPulse results without writing any code.

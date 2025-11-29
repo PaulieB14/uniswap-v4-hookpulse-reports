@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>HookPulse Explorer Sample</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        margin: 2rem;
+        background: #0a0a0a;
+        color: #f5f5f5;
+      }
+      h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+      }
+      pre {
+        background: #111;
+        padding: 1rem;
+        border-radius: 8px;
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+      }
+      th,
+      td {
+        border: 1px solid #2a2a2a;
+        padding: 0.5rem;
+        text-align: left;
+      }
+      th {
+        background: #181818;
+      }
+      code {
+        color: #8ef9ff;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>HookPulse Explorer (Sample)</h1>
+    <p>
+      Minimal demo that queries the HookPulse subgraph for top hooks and their
+      recent pools. Copy the code and use your own API key if you deploy this to
+      production.
+    </p>
+
+    <pre><code>const query = `
+{
+  hooks(orderBy: totalSwapsProcessed, orderDirection: desc, first: 5) {
+    id
+    poolCount
+    totalSwapsProcessed
+    totalLiquidityModifications
+    totalDonations
+    lastActivityAt
+    pools(first: 3, orderBy: hookSwapsCount, orderDirection: desc) {
+      id
+      hookSwapsCount
+      txCount
+    }
+  }
+}
+`;</code></pre>
+
+    <table id="hooks-table">
+      <thead>
+        <tr>
+          <th>Hook</th>
+          <th>Pool Count</th>
+          <th>Total Swaps</th>
+          <th>Liquidity Mods</th>
+          <th>Donations</th>
+          <th>Last Activity</th>
+          <th>Top Pools (id / swaps)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <script>
+      const endpoint =
+        "https://api.studio.thegraph.com/query/111767/uniswap-v-4-hookpulse/version/latest";
+
+      async function loadHooks() {
+        const graphqlQuery = {
+          query: `
+            {
+              hooks(orderBy: totalSwapsProcessed, orderDirection: desc, first: 5) {
+                id
+                poolCount
+                totalSwapsProcessed
+                totalLiquidityModifications
+                totalDonations
+                lastActivityAt
+                pools(first: 3, orderBy: hookSwapsCount, orderDirection: desc) {
+                  id
+                  hookSwapsCount
+                  txCount
+                }
+              }
+            }
+          `,
+        };
+
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(graphqlQuery),
+        });
+        const { data } = await res.json();
+        const tbody = document.querySelector("#hooks-table tbody");
+        tbody.innerHTML = "";
+
+        data.hooks.forEach((hook) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><code>${hook.id}</code></td>
+            <td>${hook.poolCount}</td>
+            <td>${hook.totalSwapsProcessed}</td>
+            <td>${hook.totalLiquidityModifications}</td>
+            <td>${hook.totalDonations}</td>
+            <td>${new Date(
+              Number(hook.lastActivityAt) * 1000
+            ).toLocaleString()}</td>
+            <td>
+              ${hook.pools
+                .map(
+                  (pool) =>
+                    `<div><code>${pool.id.slice(0, 10)}...</code> (${pool.hookSwapsCount} swaps)</div>`
+                )
+                .join("")}
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      loadHooks().catch((err) => {
+        document.querySelector(
+          "#hooks-table tbody"
+        ).innerHTML = `<tr><td colspan="7">Error loading data: ${err}</td></tr>`;
+      });
+    </script>
+  </body>
+</html>
