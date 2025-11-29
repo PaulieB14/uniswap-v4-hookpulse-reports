@@ -1,0 +1,168 @@
+# Uniswap V4 HookPulse schema following subgraph best practices
+
+type Hook @entity(immutable: false) {
+  id: Bytes!
+  poolCount: BigInt!
+  permissions: HookPermissions!
+  hookType: String
+  totalSwapsProcessed: BigInt!
+  totalLiquidityModifications: BigInt!
+  totalDonations: BigInt!
+  totalVolumeUSD: BigInt!
+  totalFeesCollected: BigInt!
+  createdAt: BigInt!
+  firstPoolCreatedAt: BigInt!
+  lastActivityAt: BigInt!
+  pools: [Pool!]! @derivedFrom(field: "hook")
+  events: [HookEvent!]! @derivedFrom(field: "hook")
+}
+
+type HookPermissions @entity(immutable: false) {
+  id: Bytes!
+  hook: Hook!
+  beforeInitialize: Boolean!
+  afterInitialize: Boolean!
+  beforeAddLiquidity: Boolean!
+  afterAddLiquidity: Boolean!
+  beforeRemoveLiquidity: Boolean!
+  afterRemoveLiquidity: Boolean!
+  beforeSwap: Boolean!
+  afterSwap: Boolean!
+  beforeDonate: Boolean!
+  afterDonate: Boolean!
+}
+
+type Token @entity(immutable: false) {
+  id: Bytes!
+  symbol: String!
+  name: String!
+  decimals: BigInt!
+  totalValueLockedUSD: BigInt!
+  volumeUSD: BigInt!
+  feesUSD: BigInt!
+  txCount: BigInt!
+  poolsAsToken0: [Pool!]! @derivedFrom(field: "token0")
+  poolsAsToken1: [Pool!]! @derivedFrom(field: "token1")
+}
+
+type Pool @entity(immutable: false) {
+  id: Bytes!
+  poolId: Bytes!
+  currency0: Bytes!
+  currency1: Bytes!
+  fee: BigInt!
+  tickSpacing: BigInt!
+  sqrtPriceX96: BigInt!
+  tick: BigInt
+  liquidity: BigInt!
+  totalValueLockedUSD: BigInt!
+  totalValueLockedToken0: BigInt!
+  totalValueLockedToken1: BigInt!
+  volumeUSD: BigInt!
+  volumeToken0: BigInt!
+  volumeToken1: BigInt!
+  feesUSD: BigInt!
+  feesToken0: BigInt!
+  feesToken1: BigInt!
+  txCount: BigInt!
+  hookSwapsCount: BigInt!
+  hookLiquidityModificationsCount: BigInt!
+  hookDonationsCount: BigInt!
+  hookVolumeUSD: BigInt!
+  hookFeesUSD: BigInt!
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+  createdAtTransaction: Bytes!
+  hook: Hook
+  hookIdRaw: Bytes!
+  token0: Token!
+  token1: Token!
+  swaps: [Swap!]! @derivedFrom(field: "pool")
+  modifyLiquiditys: [ModifyLiquidity!]! @derivedFrom(field: "pool")
+  donations: [Donate!]! @derivedFrom(field: "pool")
+}
+
+type Transaction @entity(immutable: false) {
+  id: Bytes!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  gasUsed: BigInt!
+  gasPrice: BigInt!
+}
+
+type Swap @entity(immutable: true) {
+  id: Bytes!
+  transaction: Transaction!
+  pool: Pool!
+  token0: Token!
+  token1: Token!
+  hook: Hook
+  amount0: BigInt!
+  amount1: BigInt!
+  amountUSD: BigInt!
+  sqrtPriceX96: BigInt!
+  tick: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  hookEvents: [HookEvent!]! @derivedFrom(field: "swap")
+}
+
+type ModifyLiquidity @entity(immutable: true) {
+  id: Bytes!
+  transaction: Transaction!
+  pool: Pool!
+  token0: Token!
+  token1: Token!
+  hook: Hook
+  delta: BigInt!
+  tickLower: BigInt!
+  tickUpper: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  hookEvents: [HookEvent!]! @derivedFrom(field: "modifyLiquidity")
+  salt: Bytes!
+}
+
+type Donate @entity(immutable: true) {
+  id: Bytes!
+  transaction: Transaction!
+  pool: Pool!
+  token0: Token!
+  token1: Token!
+  hook: Hook
+  amount0: BigInt!
+  amount1: BigInt!
+  amountUSD: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  hookEvents: [HookEvent!]! @derivedFrom(field: "donate")
+}
+
+type HookEvent @entity(immutable: true) {
+  id: Bytes!
+  hook: Hook!
+  pool: Pool!
+  transaction: Transaction!
+  eventType: HookEventType!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  gasUsed: BigInt!
+  gasPrice: BigInt!
+  success: Boolean!
+  swap: Swap
+  modifyLiquidity: ModifyLiquidity
+  donate: Donate
+}
+
+enum HookEventType {
+  beforeInitialize
+  afterInitialize
+  beforeAddLiquidity
+  afterAddLiquidity
+  beforeRemoveLiquidity
+  afterRemoveLiquidity
+  beforeSwap
+  afterSwap
+  beforeDonate
+  afterDonate
+}

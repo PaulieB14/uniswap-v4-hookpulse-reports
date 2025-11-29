@@ -1,0 +1,20 @@
+{
+  "name": "uniswap-v4-hooks-subgraph",
+  "version": "1.0.0",
+  "description": "Hook-focused analytics subgraph for Uniswap V4 on Ethereum Mainnet",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy",
+    "lint": "prettier --check ./src ./schema.graphql"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "^0.60.0",
+    "@graphprotocol/graph-ts": "^0.32.0",
+    "source-map-support": "^0.5.21"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "typescript": "^5.0.0"
+  }
+}
